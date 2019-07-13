@@ -1,0 +1,68 @@
+Step1
+
+$ cat infinity.py
+while 1==1:
+     print("Hello World")
+
+$ cat Dockerfile
+FROM python
+ADD infinity.py /
+
+$ docker build -t infinity -f Dockerfile .
+$ docker exec -it infinity /bin/bash
+root@26ca65d61ee8:/# python3.7 infinity.py
+Hello World
+Hello World
+Hello World
+Hello World
+
+$ docker tag infinity rkarigela/infinity
+$ docker push rkarigela/infinity
+
+Step2
+
+$ cat infinity-depoly.yaml
+
+# Start Deployment
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: infinty
+  labels:
+    app: infinity
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: infinity
+  template:
+    metadata:
+      labels:
+        app: infinity
+    spec:
+      containers:
+        - name: infinity
+          image: "rkarigela/infinity"
+          command: [ "/bin/bash", "-c", "--" ]
+          args: [ "while true; do sleep 30; done;" ]
+# End Deployment
+
+$ kubectl get po
+NAME                                        READY   STATUS    RESTARTS   AGE
+anxious-bronco-mariadb-0                    1/1     Running   0          3h59m
+anxious-bronco-wordpress-7b9678f5db-4wckr   1/1     Running   1          3h59m
+hello-node-78cd77d68f-zls54                 1/1     Running   2          9d
+infinty-7b56bbfc65-ncfz2                    1/1     Running   0          27m
+nginx-4gqrx                                 1/1     Running   3          15d
+nginx-jpff9                                 1/1     Running   3          15d
+nginx-pfj7l                                 1/1     Running   3          15d
+
+$ kubectl exec -it infinty-7b56bbfc65-ncfz2 bash
+root@infinty-7b56bbfc65-ncfz2:/# ls
+bin  boot  dev etc  home  infinity.py lib  lib64  media  mnt opt  proc
+ root  run  sbin  srv  sys  tmp  usr var
+root@infinty-7b56bbfc65-ncfz2:/# python3.7 infinity.py
+Hello World
+Hello World
+Hello World
+Hello World
